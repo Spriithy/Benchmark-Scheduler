@@ -29,11 +29,6 @@ public class Processus {
 	public int esRest;
 
 	/**
-	 * Le nombre de Quantums a passer restant (lors d'une E/S)
-	 */
-	public double quantTmp;
-
-	/**
 	 * Le temps total (en ns) occupe par le Processus
 	 */
 	public long tempsCum;
@@ -55,7 +50,6 @@ public class Processus {
 		esRest = nbES;
 
 		tempsCum = 0;
-		quantTmp = 0;
 	}
 
 	/**
@@ -68,10 +62,6 @@ public class Processus {
 	 */
 	public int exec() {
 		// On temporise si on est encore en E/S
-		if (quantTmp > 0) {
-			es();
-			return 1;
-		}
 
 		long debut = System.nanoTime();
 
@@ -81,7 +71,6 @@ public class Processus {
 
 			// Probabilite de rencontrer une E/S
 			if (Math.random() < ((double) esRest) / nbInstr) {
-				quantTmp = manager.esDuree;
 				esRest--;
 				// On a rencontre une E/S
 				return 1;
@@ -100,15 +89,6 @@ public class Processus {
 	 * Gere les E/S. Decremente le nombre de Quantums a temporiser durant une
 	 * E/S et passe le temps correspondant
 	 */
-	private void es() {
-		long debut = System.nanoTime();
-
-		// On temporise 1 Quantum
-		while (System.nanoTime() - debut < Manager.QUANTUM)
-			;
-		tempsCum += System.nanoTime() - debut;
-		quantTmp--;
-	}
 
 	@Override
 	public String toString() {

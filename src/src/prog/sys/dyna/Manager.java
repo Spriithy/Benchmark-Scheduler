@@ -8,7 +8,7 @@ public class Manager {
 	public static long QUANTUM = 1000;
 
 	private static Manager manager = new Manager();
-	private static Is is = new Is();
+	private static Saisie saisie = new Saisie();
 
 	public final int prioMax;
 	public final int instrMax;
@@ -17,11 +17,11 @@ public class Manager {
 	public final double proba;
 
 	private Manager() {
-		prioMax = is.prioMax();
-		instrMax = is.instrMax();
-		esMax = is.esMax();
-		esDuree = is.esDuree();
-		proba = is.proba();
+		prioMax = saisie.prioMax();
+		instrMax = saisie.instrMax();
+		esMax = saisie.esMax();
+		esDuree = saisie.esDuree();
+		proba = saisie.proba();
 	}
 
 	public static Manager getInstance() {
