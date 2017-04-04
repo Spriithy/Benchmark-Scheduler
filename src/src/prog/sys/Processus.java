@@ -1,10 +1,10 @@
-package src.prog.sys.dyna;
+package src.prog.sys;
 
 import java.util.Random;
 
 public class Processus {
 
-	private Manager manager = Manager.getInstance();
+	private Manager manager;
 
 	/**
 	 * La priorite d'un processus a un instant donne
@@ -33,17 +33,19 @@ public class Processus {
 	 */
 	public long tempsCum;
 
-	public Processus() {
+	public Processus(Manager manager) {
+		this.manager = manager;
 		Random random = new Random();
 		prio = random.nextInt(manager.prioMax);
 
-		// On utilise la réparatition de la loi normale pour choisir un nombre aléatoire 
-		// d'instruction d'un processus. Cela permet d'avoir des nombres d'instructions "réalistes". 
-		nbInstr = (int)(random.nextGaussian()*(manager.instrMax/4)+(manager.instrMax/2));
-		// On réajuste le nombre d'instruction au cas où la val obtenue soit trop éloignée de ce que l'on désire
-		if (nbInstr <= 0) nbInstr = 1; 
+		// On utilise la reparatition de la loi normale pour choisir un nombre
+		// aleatoire d'instruction d'un processus. Cela permet d'avoir des
+		// nombres d'instructions "realistes".
+		nbInstr = (int) (random.nextGaussian() * (manager.instrMax / 4) + (manager.instrMax / 2));
+		// On reajuste le nombre d'instruction au cas ou la val obtenue soit
+		// trop eloignee de ce que l'on desire
+		if (nbInstr <= 0) nbInstr = manager.instrMax / 2;
 		if (nbInstr > manager.instrMax) nbInstr = manager.instrMax;
-		
 
 		// On choisit un nombre d'E/S valide
 		nbES = random.nextInt((int) (manager.esMax * nbInstr));
@@ -66,7 +68,7 @@ public class Processus {
 		long debut = System.nanoTime();
 
 		// On tourne tant que le Quantum de temps alloue n'est pas epuise
-		for (int instr = 0; System.nanoTime() - debut <= Manager.QUANTUM; instr++) {
+		for (int instr = 0; System.nanoTime() - debut <= manager.quantum; instr++) {
 			tempsCum += System.nanoTime() - debut;
 
 			// Probabilite de rencontrer une E/S
