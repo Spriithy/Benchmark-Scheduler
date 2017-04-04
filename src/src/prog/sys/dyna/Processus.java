@@ -31,7 +31,7 @@ public class Processus {
 	/**
 	 * Le nombre de Quantums a passer restant (lors d'une E/S)
 	 */
-	public int quantTmp;
+	public double quantTmp;
 
 	/**
 	 * Le temps total (en ns) occupe par le Processus
@@ -42,9 +42,10 @@ public class Processus {
 		Random random = new Random();
 		prio = random.nextInt(manager.prioMax);
 
-		// On prend un nbInstr dans [imax / 2, imax] pour avoir un choix
-		// interessant et eviter les valeurs proches de 0
-		nbInstr = random.nextInt(manager.instrMax / 2) + manager.instrMax / 2;
+		// On utilise la réparatition de la loi normale pour choisir un nombre aléatoire 
+		// d'instruction d'un processus. Cela permet d'avoir des nombres d'instructions "réalistes". 
+		nbInstr = (int)(random.nextGaussian()*manager.instrMax);
+		
 
 		// On choisit un nombre d'E/S valide
 		nbES = random.nextInt((int) (manager.esMax * nbInstr));
