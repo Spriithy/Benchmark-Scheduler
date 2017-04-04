@@ -50,3 +50,7 @@ Temporary Items
 *.classpath
 .settings/org.eclipse.jdt.core.prefs
 .metadata/
+
+src/src/prog/sys/circ/Manager.java
+
+src/src/prog/sys/Main.java

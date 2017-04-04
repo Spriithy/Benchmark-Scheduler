@@ -44,7 +44,10 @@ public class Processus {
 
 		// On utilise la réparatition de la loi normale pour choisir un nombre aléatoire 
 		// d'instruction d'un processus. Cela permet d'avoir des nombres d'instructions "réalistes". 
-		nbInstr = (int)(random.nextGaussian()*manager.instrMax);
+		nbInstr = (int)(random.nextGaussian()*(manager.instrMax/4)+(manager.instrMax/2));
+		// On réajuste le nombre d'instruction au cas où la val obtenue soit trop éloignée de ce que l'on désire
+		if (nbInstr <= 0) nbInstr = 1; 
+		if (nbInstr > manager.instrMax) nbInstr = manager.instrMax;
 		
 
 		// On choisit un nombre d'E/S valide
