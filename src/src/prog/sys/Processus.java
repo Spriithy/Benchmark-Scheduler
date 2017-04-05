@@ -32,6 +32,11 @@ public class Processus {
 	 * Le temps total (en ns) occupe par le Processus
 	 */
 	public long tempsCum;
+	
+	/* 
+	 * Temps du début d'entrée sortie
+	 */
+	public long debutES;
 
 	public Processus(Manager manager) {
 		this.manager = manager;
@@ -52,6 +57,7 @@ public class Processus {
 		esRest = nbES;
 
 		tempsCum = 0;
+		debutES = 0;
 	}
 
 	/**
@@ -74,7 +80,8 @@ public class Processus {
 			// Probabilite de rencontrer une E/S
 			if (Math.random() < ((double) esRest) / nbInstr) {
 				esRest--;
-				// On a rencontre une E/S
+				// On a rencontre une E/S et on relève la "date" de début d'E/S 
+				debutES = System.nanoTime();
 				return 1;
 			}
 
@@ -86,11 +93,6 @@ public class Processus {
 		// Quantum epuise
 		return 0;
 	}
-
-	/**
-	 * Gere les E/S. Decremente le nombre de Quantums a temporiser durant une
-	 * E/S et passe le temps correspondant
-	 */
 
 	@Override
 	public String toString() {
