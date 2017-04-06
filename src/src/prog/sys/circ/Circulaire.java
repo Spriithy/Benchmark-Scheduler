@@ -15,11 +15,11 @@ public class Circulaire extends Manager {
 
 	private Circulaire() {
 		instrMax = 150000;
-		esMax = 0.5;
-		esDuree = 2;
+		esMax = 0.9;
+		esDuree = 3;
 		proba = 0.75;
 		prioMax = 1;
-		pMax = 10;
+		pMax = 100;
 	}
 
 	public static Circulaire getInstance() {
@@ -48,9 +48,6 @@ public class Circulaire extends Manager {
 				liste.addLast(p);
 				liste.pop();
 
-				// Le processus était en E/S on le remet a la fin et on analyse
-				// le processus suivant (on saute un génération possible)
-				continue;
 			} else {
 				// Sinon on regarde "l'etat" du processus et on agit en fonction
 				switch (p.exec()) {
@@ -72,7 +69,8 @@ public class Circulaire extends Manager {
 				case 2:
 					tmp = liste.getFirst();
 					System.out.println("[" + iter + "][" + liste.size() + "] Processus terminé");
-					System.out.println("\ttemps total = " + tmp.tempsCum * quantum + "ms");
+					System.out.println("\ttotal = " + tmp.tempsCum * quantum + "ms");
+					System.out.println("\tE/S = " + tmp.totalES * quantum + "ms");
 					liste.pop();
 					break;
 				}
