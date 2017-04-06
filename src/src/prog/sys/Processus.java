@@ -29,19 +29,29 @@ public class Processus {
 	public int esRest;
 
 	/**
-	 * Le temps total (en ns) occupe par le Processus
+	 * Le temps total (en Quantum) occupe par le Processus
 	 */
 	public long tempsCum;
-	
-	/* 
-	 * Temps du début d'entrée sortie
+
+	/**
+	 * Le temps total de ce processus passé en E/S
 	 */
-	public long debutES;
+	public long totalES;
+
+	/**
+	 * Le temps d'E/S restant
+	 */
+	public double tES;
+
+	/**
+	 * Permet de savoir si oui ou non le processus est en E/S
+	 */
+	public boolean es;
 
 	public Processus(Manager manager) {
 		this.manager = manager;
 		Random random = new Random();
-		prio = random.nextInt(manager.prioMax);
+		prio = random.nextInt(manager.prioMax == -1 ? 0 : manager.prioMax);
 
 		// On utilise la reparatition de la loi normale pour choisir un nombre
 		// aleatoire d'instruction d'un processus. Cela permet d'avoir des
@@ -53,11 +63,11 @@ public class Processus {
 		if (nbInstr > manager.instrMax) nbInstr = manager.instrMax;
 
 		// On choisit un nombre d'E/S valide
-		nbES = random.nextInt((int) (manager.esMax * nbInstr));
+		nbES = random.nextInt(1 + (int) (manager.esMax * nbInstr));
 		esRest = nbES;
 
 		tempsCum = 0;
-		debutES = 0;
+		es = false;
 	}
 
 	/**
@@ -67,36 +77,56 @@ public class Processus {
 	 * - 2 : Le processus a fini toutes les instructions<br>
 	 * 
 	 * @return le code associe a l'evenement de fin d'execution du processus
+	 * @throws InterruptedException
 	 */
-	public int exec() {
-		// On temporise si on est encore en E/S
+	public synchronized int exec() throws InterruptedException {
+		// Si on est en E/S
+		if (es) {
+			// On calcule le temps a passer pour cette itération (en quantums)
+			double dt = Math.min(1, tES);
+			tempsCum += 1;
+			totalES += dt;
+			tES -= dt;
+			wait(dt * manager.quantum);
 
-		long debut = System.nanoTime();
+			// code E/S
+			return 1;
+		}
 
-		// On tourne tant que le Quantum de temps alloue n'est pas epuise
-		for (int instr = 0; System.nanoTime() - debut <= manager.quantum; instr++) {
-			tempsCum += System.nanoTime() - debut;
+		if (Math.random() <= ((double) esRest) / nbInstr) {
+			es = true;
+			esRest--;
+			tES = manager.esDuree;
+			return 1;
+		}
 
-			// Probabilite de rencontrer une E/S
-			if (Math.random() < ((double) esRest) / nbInstr) {
-				esRest--;
-				// On a rencontre une E/S et on relève la "date" de début d'E/S 
-				debutES = System.nanoTime();
-				return 1;
+		long ms = System.currentTimeMillis(), dt;
+		for (int instr = 0; (dt = System.currentTimeMillis() - ms) <= manager.quantum; instr++) {
+			if (instr >= nbInstr) {
+				tempsCum += dt;
+				return 2;				
 			}
-
-			// On a fini d'executer ce Processus
-			if (instr >= nbInstr)
-				return 2;
 		}
 
 		// Quantum epuise
+		tempsCum += 1;
 		return 0;
+	}
+
+	/**
+	 * Est utilisée pour faire attendre le processeur
+	 * 
+	 * @param dt
+	 *            le ratio en terme de quantums a attendre
+	 * @throws InterruptedException
+	 */
+	private synchronized void wait(double dt) throws InterruptedException {
+		wait((int) (1000000 * dt) / 1000000, (int) (1000000 * dt) % 1000000);
 	}
 
 	@Override
 	public String toString() {
-		return "<thread@" + hashCode() + " t=" + tempsCum + ", p=" + prio + ">";
+		return hashCode() + "";
 	}
 
 }

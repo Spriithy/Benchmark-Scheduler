@@ -1,73 +1,92 @@
 package src.prog.sys.circ;
 
-import src.prog.sys.Manager;
-import src.prog.sys.Saisie;
-import src.prog.sys.Processus;
 import java.util.LinkedList;
+
+import src.prog.sys.Manager;
+import src.prog.sys.Processus;
 
 public class Circulaire extends Manager {
 
-	private static Circulaire circulaire = new Circulaire();
-	LinkedList <Processus> liste = new LinkedList <Processus> ();
+	private static final Circulaire circulaire = new Circulaire();
+	private LinkedList<Processus> liste = new LinkedList<Processus>();
+
+	int iter = 0;
+	boolean maxAtteint = false;
 
 	private Circulaire() {
-		instrMax = Saisie.instrMax();
-		esMax = Saisie.esMax();
-		esDuree = Saisie.esDuree();
-		proba = Saisie.proba();
-		prioMax = 0;
+		instrMax = 150000;
+		esMax = 0.5;
+		esDuree = 2;
+		proba = 0.75;
+		prioMax = 1;
+		pMax = 10;
 	}
 
 	public static Circulaire getInstance() {
 		return circulaire;
 	}
 
-	public void traitement(){
-		
-		// On place un premier processus aléatoire
-		Processus first = new Processus(circulaire);
-		liste.add(first);
-		
-		while ( liste.size() != 0 ){
-			// On récupère le 1er processus de la liste
-			Processus p = liste.peek();
-			
-			
-			// On test si le processus est en cours d'E/S; si oui on place le processus en fin de liste
-			if ( ( System.nanoTime() - p.debutES < esDuree )  && ( p.debutES != 0 ) ){
-				Processus tmp = liste.pop();
-				liste.addLast(tmp);
-			}
-			
-			
-			// Sinon on regarde "l'état" du processus et on agit en fonction
-			else {
-				// Quantum de temps épuisé, on le place en fin de liste
-				if ( p.exec() == 0 ){
-					Processus tmp = liste.pop();
+	public void traitement() throws InterruptedException {
+		Processus tmp, p;
+
+		// On place un premier processus aleatoire
+		liste.addFirst(new Processus(this));
+
+		while (liste.size() > 0) {
+			if (liste.size() >= pMax)
+				maxAtteint = true;
+			iter++;
+			// On recupere le 1er processus de la liste
+			p = liste.getFirst();
+
+			// On teste si le processus est en cours d'E/S; si oui on place le
+			// processus en fin de liste
+			if (p.es && p.tES == 0) {
+				System.out.println("[" + iter + "][" + liste.size() + "] E/S termin√©e pour " + p.toString());
+
+				p.es = false; // On r√©initialise le processus sur ses E/S
+				liste.addLast(p);
+				liste.pop();
+
+				// Le processus √©tait en E/S on le remet a la fin et on analyse
+				// le processus suivant (on saute un g√©n√©ration possible)
+				continue;
+			} else {
+				// Sinon on regarde "l'etat" du processus et on agit en fonction
+				switch (p.exec()) {
+				// Quantum de temps epuise, on le place en fin de liste
+				// OU Instruction d'E/S, on le place en fin de liste
+				case 0:
+					System.out.println(
+							"[" + iter + "][" + liste.size() + "] Quantum √©puis√© pour " + liste.peek().toString());
+					tmp = liste.pop();
 					liste.addLast(tmp);
-				}
-				//Instruction d'E/S, on le place en fin de liste
-				if ( p.exec() == 1 ){
-					Processus tmp = liste.pop();
+					break;
+				case 1:
+					System.out.println(
+							"[" + iter + "][" + liste.size() + "] E/S en cours pour " + liste.peek().toString());
+					tmp = liste.pop();
 					liste.addLast(tmp);
-				}
-				//Le processus a fini toutes ses instructions, on le supprime
-				if ( p.exec() == 2 ){
+					break;
+				// Le processus a fini toutes ses instructions, on le supprime
+				case 2:
+					tmp = liste.getFirst();
+					System.out.println("[" + iter + "][" + liste.size() + "] Processus termin√©");
+					System.out.println("\ttemps total = " + tmp.tempsCum * quantum + "ms");
 					liste.pop();
+					break;
 				}
 			}
-			
-			
-			/* On simule une proba uniforme et on compare à la proba entrer par l'utilisateur
-			 * Si la simulation est <= à la proba de l'utilisateur, on ajoute un nouveau processus 
-			 * en fin de liste
-			 */
-			if ( Math.random() <= proba ) 
-				liste.addLast(new Processus(circulaire));
-			
+
+			// On simule une proba uniforme et on compare a la proba entrer par
+			// l'utilisateur Si la simulation est <= a la proba de
+			// l'utilisateur, on ajoute un nouveau processus en fin de liste
+			if (Math.random() >= proba && !maxAtteint) {
+				liste.addLast(new Processus(this));
+				System.out.println("[" + iter + "][" + liste.size() + "] Nouveau processus " + liste.peek().hashCode());
+			}
 		}
+		System.out.println("[" + iter + "] Simulation Circulaire termin√©e");
 	}
-	
-	
+
 }
