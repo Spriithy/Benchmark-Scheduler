@@ -43,4 +43,20 @@ public class Saisie {
 		if ((1 < val) && (val <= 0)) return Math.abs(val);
 		return -1;
 	}
+	
+	public static double argIncr(){
+		System.out.print("Entrer une probabilite d'arrivee d'un nouveau processus : ");
+		double val = Double.parseDouble(reader.next());
+		if (( val > 0 ) && ( val <= 1 ))
+			return val;
+		return -1;
+	}
+	
+	public static int pMax(){
+		System.out.print("Entrer une priorite maximale : ");
+		int n = reader.nextInt();
+		if (n > 0)
+			return n;
+		return -1;
+	}
 }

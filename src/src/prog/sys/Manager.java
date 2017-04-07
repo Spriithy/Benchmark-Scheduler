@@ -13,5 +13,6 @@ public abstract class Manager {
 	public double esMax;
 	public double esDuree; // En unite Quantum
 	public double proba;
+	public double argIncr;
 
 }

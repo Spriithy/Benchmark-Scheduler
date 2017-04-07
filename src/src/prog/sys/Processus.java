@@ -47,12 +47,19 @@ public class Processus {
 	 * Permet de savoir si oui ou non le processus est en E/S
 	 */
 	public boolean es;
+	
+	/**
+	 * Priorité temporaire d'un processus pour l'algorithme dynamique
+	 */
+	public double prioTmp;
 
 	public Processus(Manager manager) {
 		this.manager = manager;
 		Random random = new Random();
 		prio = random.nextInt(manager.prioMax == -1 ? 0 : manager.prioMax);
-
+		// On initialise la priorité temporaire à la priorité "atomique"
+		prioTmp = prio;
+		
 		// On utilise la reparatition de la loi normale pour choisir un nombre
 		// aleatoire d'instruction d'un processus. Cela permet d'avoir des
 		// nombres d'instructions "realistes".
