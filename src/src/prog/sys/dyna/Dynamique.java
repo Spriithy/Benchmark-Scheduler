@@ -1,135 +1,133 @@
 package src.prog.sys.dyna;
 
+import java.util.LinkedList;
+
+import com.sun.javafx.collections.SortableList;
+
 import src.prog.sys.Manager;
 import src.prog.sys.Processus;
-import src.prog.sys.Saisie;
-
-import java.util.LinkedList;
 
 public class Dynamique extends Manager {
 
 	private static Dynamique dyna = new Dynamique();
 	private LinkedList<Processus> liste = new LinkedList<Processus>();
-	
+
 	boolean maxAtteint = false;
 	int iter = 0;
 
 	private Dynamique() {
-		prioMax = Saisie.prioMax();
-		instrMax = Saisie.instrMax();
-		esMax = Saisie.esMax();
-		esDuree = Saisie.esDuree();
-		proba = Saisie.proba();
-		argIncr = Saisie.argIncr();
-		pMax = Saisie.pMax();
+		prioMax = 10;
+		instrMax = 150000;
+		esMax = 0.6;
+		esDuree = 11;
+		proba = 0.75;
+		prioMax = 1;
+		pMax = 100;
+		argIncr = 1;
 	}
 
 	public static Dynamique getInstance() {
 		return dyna;
 	}
-	
-	public void incrementer(LinkedList<Processus> l){
-		for (int i=0; i < l.size(); i++){
-			Processus p = l.get(i);
-			p.prioTmp += argIncr ;
-			l.set(i,p);
-		}
+
+	public void incrementer() {
+		for (Processus p : liste)
+			p.prioTmp += argIncr;
 	}
-	
+
 	/**
-	 * Fonction qui place un processus après les processus de la liste ayant meme priorité
+	 * Fonction qui place un processus aprÔøΩs les processus de la liste ayant
+	 * meme priorit≈Ω
+	 * 
 	 * @param l
 	 */
-	public void placerAprèsprio(LinkedList<Processus> l){
-		// @sup arrête la boucle lorsque l'on rencontre des processus d'une priorité inférieur à 
-		// la priorité du processus p en cours de gestion 
+	public void placerApresPrio() {
+		// @sup arrÔøΩte la boucle lorsque l'on rencontre des processus d'une
+		// priorit≈Ω inf≈Ωrieur ÀÜ
+		// la priorit≈Ω du processus p en cours de gestion
 		boolean sup = true;
-		Processus p = l.pop();
-		
-		// On initialise la frontière @limite entre les processus de prio supérieur et inférieur à la variable prio
-		// à 0 dans le cas ou le processus soit celui de plus haute priorité (on le place en début de liste).
-		int limite = 0; 
-		
-		for (int i = 0; i < l.size() && sup ; i++){
-			Processus tmp = l.get(i);
-			if ( tmp.prioTmp < p.prio ){
+		Processus p = liste.pop();
+
+		// On initialise la frontiÔøΩre @limite entre les processus de prio
+		// sup≈Ωrieur et inf≈Ωrieur ÀÜ la variable prio
+		// ÀÜ 0 dans le cas ou le processus soit celui de plus haute priorit≈Ω (on
+		// le place en d≈Ωbut de liste).
+		int limite = 0;
+
+		for (int i = 0; i < liste.size() && sup; i++) {
+			Processus tmp = liste.get(i);
+			if (tmp.prioTmp < p.prio) {
 				sup = false;
 				limite = i;
 			}
 		}
-		l.add(limite,p);
+		liste.add(limite, p);
 	}
-	
+
 	/**
-	 * Ajoute un nouveau processus dans une liste chainée devant ceux de même priorité
+	 * Ajoute un nouveau processus dans une liste chain≈Ωe devant ceux de mÔøΩme
+	 * priorit≈Ω
 	 */
-	public void ajoutProc(LinkedList<Processus> l){
-		Processus p = new Processus(dyna);
-		boolean inf = true;
-		int limite = 0;
-		
-		for (int i = 0; i < l.size() && inf; i++){
-			Processus tmp = l.get(i);
-			if ( tmp.prioTmp <= p.prio){
-				inf = false;
-				limite = i;
-			}
-		l.add(limite,p);
-		}
+	public void ajoutProc() {
+		liste.addLast(new Processus(this));
+		liste.sort((p1, p2) -> {
+			return p1.prio - p2.prio;
+		});
 	}
 
 	public void traitement() throws InterruptedException {
 		Processus p;
-		
-		// On insère un premier élement dans la liste chainée
+
+		// On insÔøΩre un premier ≈Ωlement dans la liste chain≈Ωe
 		liste.addFirst(new Processus(this));
-		
-		while ( liste.size() > 0 ){
+
+		while (liste.size() > 0) {
 			if (liste.size() > pMax)
 				maxAtteint = true;
 			iter++;
-			
-			// Récupération 1er élement de la liste
-			p = liste.getFirst();
-			
-			if (p.es && p.tES == 0){
-				System.out.println("[" + iter + "][" + liste.size() + "] E/S terminée pour " + p.toString());
 
-				p.es = false; // On réinitialise le processus sur ses E/S
-				p.prioTmp = p.prio; // On réinitialise la priorité du processus
-				placerAprèsprio(liste);// On place le processus après ceux de même prio
-			}
-			else {
+			// R≈Ωcup≈Ωration 1er ≈Ωlement de la liste
+			p = liste.getFirst();
+
+			if (p.es && p.tES == 0) {
+				System.out.println("[" + iter + "][" + liste.size() + "] E/S termin≈Ωe pour " + p.toString());
+
+				p.es = false; // On r≈Ωinitialise le processus sur ses E/S
+				p.prioTmp = p.prio; // On r≈Ωinitialise la priorit≈Ω du processus
+				placerApresPrio();// On place le processus aprÔøΩs ceux de
+									// mÔøΩme prio
+			} else {
 				// Sinon on regarde "l'etat" du processus et on agit en fonction
 				switch (p.exec()) {
-				case 0:	
+				case 0:
 					System.out.println(
-							"[" + iter + "][" + liste.size() + "] Quantum épuisé pour " + liste.peek().toString());
+							"[" + iter + "][" + liste.size() + "] Quantum ≈Ωpuis≈Ω pour " + liste.peek().toString());
 					p.prioTmp = p.prio;
-					placerAprèsprio(liste);
+					placerApresPrio();
 					break;
 				case 1:
 					System.out.println(
 							"[" + iter + "][" + liste.size() + "] E/S en cours pour " + liste.peek().toString());
 					p.prioTmp = p.prio;
-					placerAprèsprio(liste);
+					placerApresPrio();
 					break;
-				case 2: 
+				case 2:
 					Processus tmp = liste.getFirst();
-					System.out.println("[" + iter + "][" + liste.size() + "] Processus terminé");
+					System.out.println("[" + iter + "][" + liste.size() + "] Processus termin≈Ω");
 					System.out.println("\ttotal = " + tmp.tempsCum * quantum + "ms");
 					System.out.println("\tE/S = " + tmp.totalES * quantum + "ms");
 					liste.pop();
 					break;
-					
+
 				}
 			}
 			// On simule une proba uniforme et on compare a la proba entrer par
 			// l'utilisateur Si la simulation est <= a la proba de
-			// l'utilisateur, et si la taille max de la liste n'est pas atteinte. On place le processus avant ceux de même prio
+			// l'utilisateur, et si la taille max de la liste n'est pas
+			// atteinte. On place le processus avant ceux de mÔøΩme prio
 			if (Math.random() >= proba && !maxAtteint) {
-			ajoutProc(liste);
-			System.out.println("[" + iter + "][" + liste.size() + "] Nouveau processus " + liste.peek().hashCode());
+				ajoutProc();
+				System.out.println("[" + iter + "][" + liste.size() + "] Nouveau processus " + liste.peek().hashCode());
 			}
 		}
 	}

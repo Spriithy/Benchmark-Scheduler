@@ -15,8 +15,8 @@ public class Circulaire extends Manager {
 
 	private Circulaire() {
 		instrMax = 150000;
-		esMax = 0.9;
-		esDuree = 3;
+		esMax = 0.6;
+		esDuree = 11;
 		proba = 0.75;
 		prioMax = 1;
 		pMax = 100;
