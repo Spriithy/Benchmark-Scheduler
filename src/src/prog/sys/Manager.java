@@ -2,10 +2,7 @@ package src.prog.sys;
 
 public abstract class Manager {
 	
-	/**
-	 * Un Quantum est par defaut de 1ms
-	 */
-	public long quantum = 1;
+	public int quantum = 1000;
 
 	public int pMax;
 	public int prioMax;

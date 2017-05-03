@@ -6,6 +6,10 @@ public class Processus {
 
 	private Manager manager;
 
+	static int nn = 0;
+
+	int num;
+
 	/**
 	 * La priorite d'un processus a un instant donne
 	 */
@@ -22,11 +26,6 @@ public class Processus {
 	 * le processus est elu
 	 */
 	public int nbES;
-
-	/**
-	 * Le nombre d'E/S restant a executer sur ce Processus
-	 */
-	public int esRest;
 
 	/**
 	 * Le temps total (en Quantum) occupe par le Processus
@@ -47,34 +46,43 @@ public class Processus {
 	 * Permet de savoir si oui ou non le processus est en E/S
 	 */
 	public boolean es;
-	
+
 	/**
 	 * Priorité temporaire d'un processus pour l'algorithme dynamique
 	 */
 	public double prioTmp;
 
+	public ListeInstruction li;
+
+	public int at;
+
 	public Processus(Manager manager) {
+		num = nn++;
 		this.manager = manager;
 		Random random = new Random();
 		prio = random.nextInt(manager.prioMax == -1 ? 0 : manager.prioMax);
 		// On initialise la priorité temporaire à la priorité "atomique"
 		prioTmp = prio;
-		
+
 		// On utilise la reparatition de la loi normale pour choisir un nombre
 		// aleatoire d'instruction d'un processus. Cela permet d'avoir des
 		// nombres d'instructions "realistes".
 		nbInstr = (int) (random.nextGaussian() * (manager.instrMax / 4) + (manager.instrMax / 2));
 		// On reajuste le nombre d'instruction au cas ou la val obtenue soit
 		// trop eloignee de ce que l'on desire
-		if (nbInstr <= 0) nbInstr = manager.instrMax / 2;
-		if (nbInstr > manager.instrMax) nbInstr = manager.instrMax;
+		if (nbInstr <= 0)
+			nbInstr = manager.instrMax / 2;
+		if (nbInstr > manager.instrMax)
+			nbInstr = manager.instrMax;
 
 		// On choisit un nombre d'E/S valide
 		nbES = random.nextInt(1 + (int) (manager.esMax * nbInstr));
-		esRest = nbES;
 
 		tempsCum = 0;
 		es = false;
+
+		li = new ListeInstruction(nbInstr, nbES);
+		at = 0;
 	}
 
 	/**
@@ -87,53 +95,39 @@ public class Processus {
 	 * @throws InterruptedException
 	 */
 	public synchronized int exec() throws InterruptedException {
-		// Si on est en E/S
-		if (es) {
-			// On calcule le temps a passer pour cette itération (en quantums)
-			double dt = Math.min(1, tES);
-			tempsCum += 1;
-			totalES += dt;
-			tES -= dt;
-			wait(dt * manager.quantum);
+		long nano = System.nanoTime();
 
-			// code E/S
-			return 1;
-		}
+		for (; System.nanoTime() - nano <= manager.quantum; at++) {
+			if (at >= nbInstr)
+				return 2;
 
-		if (Math.random() <= ((double) esRest) / nbInstr) {
-			es = true;
-			esRest--;
-			tES = manager.esDuree;
-			return 1;
-		}
-
-		long ms = System.currentTimeMillis(), dt;
-		for (int instr = 0; (dt = System.currentTimeMillis() - ms) <= manager.quantum; instr++) {
-			if (instr >= nbInstr) {
-				tempsCum += dt;
-				return 2;				
+			if (li.instr[at]) {
+				tES = manager.esDuree;
+				es = true;
+				return 1;
 			}
 		}
 
-		// Quantum epuise
 		tempsCum += 1;
+		wait(0, manager.quantum);
 		return 0;
 	}
 
-	/**
-	 * Est utilisée pour faire attendre le processeur
-	 * 
-	 * @param dt
-	 *            le ratio en terme de quantums a attendre
-	 * @throws InterruptedException
-	 */
-	private synchronized void wait(double dt) throws InterruptedException {
-		wait((int) (1000000 * dt) / 1000000, (int) (1000000 * dt) % 1000000);
+	public synchronized void es() throws InterruptedException {
+		if (es) {
+			tES -= 1;
+			totalES += 1;
+			tempsCum += 1;
+
+			if (tES <= 0)
+				es = false;
+			at++;
+		}
 	}
 
 	@Override
 	public String toString() {
-		return hashCode() + "";
+		return "(P" + num + ")";
 	}
 
 }

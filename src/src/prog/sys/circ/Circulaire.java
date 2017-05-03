@@ -14,12 +14,12 @@ public class Circulaire extends Manager {
 	boolean maxAtteint = false;
 
 	private Circulaire() {
-		instrMax = 150000;
-		esMax = 0.6;
-		esDuree = 11;
+		instrMax = 150;
+		esMax = 0.2;
+		esDuree = 1;
 		proba = 0.75;
 		prioMax = 1;
-		pMax = 100;
+		pMax = 10;
 	}
 
 	public static Circulaire getInstance() {
@@ -36,6 +36,10 @@ public class Circulaire extends Manager {
 			if (liste.size() >= pMax)
 				maxAtteint = true;
 			iter++;
+			
+			for (Processus pp : liste)
+				pp.es();
+			
 			// On recupere le 1er processus de la liste
 			p = liste.getFirst();
 
@@ -69,8 +73,8 @@ public class Circulaire extends Manager {
 				case 2:
 					tmp = liste.getFirst();
 					System.out.println("[" + iter + "][" + liste.size() + "] Processus terminé");
-					System.out.println("\ttotal = " + tmp.tempsCum * quantum + "ms");
-					System.out.println("\tE/S = " + tmp.totalES * quantum + "ms");
+					System.out.println("\ttotal = " + tmp.tempsCum + " qt");
+					System.out.println("\tE/S = " + tmp.totalES + " qt");
 					liste.pop();
 					break;
 				}

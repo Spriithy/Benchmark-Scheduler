@@ -1,15 +1,15 @@
 package src.prog.sys;
 
-import src.prog.sys.dyna.Dynamique;;
+import src.prog.sys.circ.Circulaire;;
 
 public class Main {
 
 	public static void main(String[] args) {
 		try {
-			Dynamique.getInstance().traitement();
+			Circulaire.getInstance().traitement();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 }
